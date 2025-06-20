@@ -147,13 +147,17 @@ func handleSetSystemPrompt(userID int64, text string) {
 		return
 	}
 
+	setSystemPrompt(userID, prompt)
+
+	msg := tgbotapi.NewMessage(userID, "System prompt set successfully!")
+	bot.Send(msg)
+}
+
+func setSystemPrompt(userID int64, prompt string) {
 	// Set the system prompt in the user's session
 	session := userSessions[userID]
 	session.Messages = append(session.Messages, Message{
 		Role:    "system",
 		Content: prompt,
 	})
-
-	msg := tgbotapi.NewMessage(userID, "System prompt set successfully!")
-	bot.Send(msg)
 }
