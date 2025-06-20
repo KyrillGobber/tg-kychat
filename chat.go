@@ -25,6 +25,9 @@ func handleChat(userID int64, text string, session *UserSession) {
 	// Send typing indicator
 	typing := tgbotapi.NewChatAction(userID, tgbotapi.ChatTyping)
 	bot.Send(typing)
+	// ... message
+	generatingMessage := tgbotapi.NewMessage(userID, "...")
+	sentMsg, _ := bot.Send(generatingMessage)
 
 	// Make request to LiteLLM
 	response, err := callLiteLLM(session.Model, session.Messages)
@@ -41,9 +44,8 @@ func handleChat(userID int64, text string, session *UserSession) {
 	assistantMessage := response.Choices[0].Message
 	session.Messages = append(session.Messages, assistantMessage)
 
-	// Send response to user
-	msg := tgbotapi.NewMessage(userID, assistantMessage.Content)
-	msg.ParseMode = tgbotapi.ModeMarkdown
-	bot.Send(msg)
+	// Edit the generating message with the actual response
+	finalMsg := tgbotapi.NewEditMessageText(userID, sentMsg.MessageID, assistantMessage.Content)
+	finalMsg.ParseMode = tgbotapi.ModeMarkdown
+	bot.Send(finalMsg)
 }
-

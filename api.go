@@ -9,6 +9,12 @@ import (
 	"os"
 )
 
+type LiteLLMRequest struct {
+	Model          string                 `json:"model"`
+	Messages       []Message              `json:"messages"`
+	stream         bool                   `json:"stream"`
+}
+
 func getLiteLLMModels() ([]ModelInfo, error) {
 	url := os.Getenv("LITELLM_URL") + "/models?return_wildcard_routes=false&include_model_access_groups=false"
 	token := os.Getenv("LITELLM_APIKEY")
@@ -36,6 +42,7 @@ func callLiteLLM(model string, messages []Message) (*LiteLLMResponse, error) {
 	reqBody := LiteLLMRequest{
 		Model:    model,
 		Messages: messages,
+		stream:   false,
 	}
 
 	jsonData, err := json.Marshal(reqBody)

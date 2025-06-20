@@ -10,12 +10,6 @@ import (
 	"github.com/joho/godotenv"
 )
 
-// LiteLLM request/response structures
-type LiteLLMRequest struct {
-	Model    string    `json:"model"`
-	Messages []Message `json:"messages"`
-}
-
 type Message struct {
 	Role    string `json:"role"`
 	Content string `json:"content"`
@@ -108,12 +102,13 @@ func handleMessage(message *tgbotapi.Message) {
 		handleHelp(userID)
 	case strings.HasPrefix(message.Text, "/status"):
 		handleStatus(userID)
+	case strings.HasPrefix(message.Text, "/system_prompt"):
+		handleSetSystemPrompt(userID, message.Text)
 	default:
 		// Regular chat message
 		handleChat(userID, message.Text, session)
 	}
 }
-
 
 func handleCallbackQuery(callback *tgbotapi.CallbackQuery) {
 	userID := callback.Message.Chat.ID
@@ -140,4 +135,3 @@ func handleCallbackQuery(callback *tgbotapi.CallbackQuery) {
 	deleteMsg := tgbotapi.NewDeleteMessage(callback.Message.Chat.ID, callback.Message.MessageID)
 	bot.Request(deleteMsg)
 }
-
