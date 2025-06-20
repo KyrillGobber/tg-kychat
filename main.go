@@ -33,6 +33,7 @@ var (
 	bot          *tgbotapi.BotAPI
 	userSessions = make(map[int64]*UserSession)
 	litellmURL   string
+	systemPrompt = "You are my bro, be witty and concise."
 )
 
 func main() {
@@ -134,4 +135,25 @@ func handleCallbackQuery(callback *tgbotapi.CallbackQuery) {
 	// Delete the keyboard message
 	deleteMsg := tgbotapi.NewDeleteMessage(callback.Message.Chat.ID, callback.Message.MessageID)
 	bot.Request(deleteMsg)
+}
+
+func handleSetSystemPrompt(userID int64, text string) {
+	// Extract the system prompt from the command
+	prompt := strings.TrimPrefix(text, "/system_prompt ")
+
+	if prompt == "" {
+		msg := tgbotapi.NewMessage(userID, "Use like /system_prompt <your prompt> to set a system prompt.")
+		bot.Send(msg)
+		return
+	}
+
+	// Set the system prompt in the user's session
+	session := userSessions[userID]
+	session.Messages = append(session.Messages, Message{
+		Role:    "system",
+		Content: prompt,
+	})
+
+	msg := tgbotapi.NewMessage(userID, "System prompt set successfully!")
+	bot.Send(msg)
 }

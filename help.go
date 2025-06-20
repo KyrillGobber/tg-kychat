@@ -48,10 +48,12 @@ func handleStatus(userID int64) {
 		"📊 Current Status:\n\n"+
 			"🧠 Model: %s\n"+
 			"💬 Messages in history: %d\n"+
-			"🔗 LiteLLM Server: %s",
+			"🔗 LiteLLM Server: %s\n"+
+			"🤖 System Prompt: %s",
 		session.Model,
 		len(session.Messages),
 		litellmURL,
+		systemPrompt,
 	)
 
 	msg := tgbotapi.NewMessage(userID, statusText)
