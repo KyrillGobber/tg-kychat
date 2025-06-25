@@ -6,20 +6,6 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
-func handleStart(userID int64) {
-	msg := tgbotapi.NewMessage(userID,
-		"🤖 Welcome to LiteLLM Bot!\n\n"+
-			"I can connect you to various AI models through your LiteLLM server.\n\n"+
-			"Commands:\n"+
-			"/model - Select AI model\n"+
-			"/clear - Clear conversation history\n"+
-			"/status - Show current model and message count\n"+
-			"/help - Show this help message\n\n"+
-			"Just send me a message to start chatting!")
-
-	bot.Send(msg)
-}
-
 func handleHelp(userID int64) {
 	helpText := "🤖 LiteLLM Bot Help\n\n" +
 		"Commands:\n" +
@@ -47,13 +33,13 @@ func handleStatus(userID int64) {
 	statusText := fmt.Sprintf(
 		"📊 Current Status:\n\n"+
 			"🧠 Model: %s\n"+
+			"🤖 System Prompt: %s\n"+
 			"💬 Messages in history: %d\n"+
-			"🔗 LiteLLM Server: %s\n"+
-			"🤖 System Prompt: %s",
+			"🔗 LiteLLM Server: %s",
 		session.Model,
+		session.SystemPrompt,
 		len(session.Messages),
 		litellmURL,
-		systemPrompt,
 	)
 
 	msg := tgbotapi.NewMessage(userID, statusText)

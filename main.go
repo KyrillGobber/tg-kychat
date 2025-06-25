@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"slices"
+	"strconv"
 	"strings"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -23,17 +25,16 @@ type Choice struct {
 	Message Message `json:"message"`
 }
 
-// User session to store conversation history and selected model
 type UserSession struct {
-	Model    string
-	Messages []Message
+	Model        string
+	Messages     []Message
+	SystemPrompt string
 }
 
 var (
 	bot          *tgbotapi.BotAPI
 	userSessions = make(map[int64]*UserSession)
 	litellmURL   string
-	systemPrompt = "You are my bro, be witty and concise."
 )
 
 func main() {
@@ -46,6 +47,7 @@ func main() {
 	// Get configuration from environment variables
 	botToken := os.Getenv("TELEGRAM_BOT_TOKEN")
 	litellmURL = os.Getenv("LITELLM_URL")
+	allowedUsers := strings.Split(os.Getenv("ALLOWED_USERS"), ",")
 
 	if botToken == "" {
 		log.Fatal("TELEGRAM_BOT_TOKEN environment variable is required")
@@ -71,10 +73,19 @@ func main() {
 
 	// Handle updates
 	for update := range updates {
-		if update.Message != nil {
-			handleMessage(update.Message)
-		} else if update.CallbackQuery != nil {
-			handleCallbackQuery(update.CallbackQuery)
+		// Only allow allowed users
+		if slices.Contains(allowedUsers, strconv.FormatInt(update.Message.From.ID, 10)) {
+			if update.Message != nil {
+				handleMessage(update.Message)
+			} else if update.CallbackQuery != nil {
+				handleCallbackQuery(update.CallbackQuery)
+			}
+		} else {
+			userID := update.Message.From.ID
+			msg := tgbotapi.NewMessage(userID, fmt.Sprintf("Sorry %s, you can't use this bot", update.Message.From.UserName))
+			bot.Send(msg)
+			log.Printf("User %s tried to access the bot %d", update.Message.From.UserName, userID)
+			continue
 		}
 	}
 }
@@ -85,26 +96,25 @@ func handleMessage(message *tgbotapi.Message) {
 	// Initialize user session if it doesn't exist
 	if userSessions[userID] == nil {
 		userSessions[userID] = &UserSession{
-			Model:    "perplexity/sonar", // Default model
-			Messages: []Message{},
+			Model:        "mistral-31-24b", // Default model
+			Messages:     []Message{},
+			SystemPrompt: "You are my bro, be witty and concise.",
 		}
 	}
 
 	session := userSessions[userID]
 
 	switch {
-	case strings.HasPrefix(message.Text, "/start"):
-		handleStart(userID)
 	case strings.HasPrefix(message.Text, "/model"):
 		handleModelSelection(userID)
-	case strings.HasPrefix(message.Text, "/clear"):
-		handleClear(userID)
-	case strings.HasPrefix(message.Text, "/help"):
-		handleHelp(userID)
-	case strings.HasPrefix(message.Text, "/status"):
-		handleStatus(userID)
 	case strings.HasPrefix(message.Text, "/system_prompt"):
 		handleSetSystemPrompt(userID, message.Text)
+	case strings.HasPrefix(message.Text, "/clear"):
+		handleClear(userID)
+	case strings.HasPrefix(message.Text, "/status"):
+		handleStatus(userID)
+	case strings.HasPrefix(message.Text, "/help"):
+		handleHelp(userID)
 	default:
 		// Regular chat message
 		handleChat(userID, message.Text, session)
@@ -156,6 +166,7 @@ func handleSetSystemPrompt(userID int64, text string) {
 func setSystemPrompt(userID int64, prompt string) {
 	// Set the system prompt in the user's session
 	session := userSessions[userID]
+	session.SystemPrompt = prompt
 	session.Messages = append(session.Messages, Message{
 		Role:    "system",
 		Content: prompt,

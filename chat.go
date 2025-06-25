@@ -11,7 +11,7 @@ func handleClear(userID int64) {
 		userSessions[userID].Messages = []Message{}
 	}
 
-	setSystemPrompt(userID, systemPrompt)
+	setSystemPrompt(userID, userSessions[userID].SystemPrompt)
 
 	msg := tgbotapi.NewMessage(userID, "🗑️ Conversation history cleared!")
 	bot.Send(msg)
