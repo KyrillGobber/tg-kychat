@@ -36,7 +36,7 @@ func getLiteLLMModels() ([]ModelInfo, error) {
 	return response.Data, nil
 }
 
-func callLiteLLM(model string, messages []Message) (*LiteLLMResponse, error) {
+func callLiteLLM(model string, messages []Message) (*LiteLLMResponseFull, error) {
 	fmt.Println("Calling LiteLLM with model:", model)
 	// Prepare request
 	reqBody := LiteLLMRequest{
@@ -68,7 +68,7 @@ func callLiteLLM(model string, messages []Message) (*LiteLLMResponse, error) {
 	}
 
 	// Parse response
-	var litellmResp LiteLLMResponse
+	var litellmResp LiteLLMResponseFull
 	if err := json.NewDecoder(resp.Body).Decode(&litellmResp); err != nil {
 		return nil, err
 	}

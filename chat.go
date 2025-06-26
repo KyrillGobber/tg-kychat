@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -44,10 +45,16 @@ func handleChat(userID int64, text string, session *UserSession) {
 
 	// Add assistant response to history
 	assistantMessage := response.Choices[0].Message
+	tokenUsage := fmt.Sprintf("Tokens: %d (prompt: %d, completion: %d)",
+		response.Usage.TotalTokens,
+		response.Usage.PromptTokens,
+		response.Usage.CompletionTokens)
 	session.Messages = append(session.Messages, assistantMessage)
 
+	msgText := fmt.Sprintf("%s\n---\n%s", assistantMessage.Content, tokenUsage)
+
 	// Edit the generating message with the actual response
-	finalMsg := tgbotapi.NewEditMessageText(userID, sentMsg.MessageID, assistantMessage.Content)
+	finalMsg := tgbotapi.NewEditMessageText(userID, sentMsg.MessageID, msgText)
 	finalMsg.ParseMode = tgbotapi.ModeMarkdown
 	bot.Send(finalMsg)
 }
