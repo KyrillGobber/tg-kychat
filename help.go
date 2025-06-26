@@ -22,19 +22,12 @@ func handleHelp(userID int64) {
 
 func handleStatus(userID int64) {
 	session := userSessions[userID]
-	if session == nil {
-		session = &UserSession{
-			Model:    "gpt-3.5-turbo",
-			Messages: []Message{},
-		}
-		userSessions[userID] = session
-	}
 
 	statusText := fmt.Sprintf(
 		"📊 Current Status:\n\n"+
 			"🧠 Model: %s\n"+
 			"🤖 System Prompt: %s\n"+
-			"💬 Messages in history: %d\n"+
+			"💬 Messages in history: %d (includes system prompt)\n"+
 			"🔗 LiteLLM Server: %s",
 		session.Model,
 		session.SystemPrompt,

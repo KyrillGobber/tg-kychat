@@ -94,12 +94,10 @@ func main() {
 	// Handle updates
 	for update := range updates {
 		// Only allow allowed users
-		if slices.Contains(allowedUsers, strconv.FormatInt(update.Message.From.ID, 10)) {
-			if update.Message != nil {
-				handleMessage(update.Message)
-			} else if update.CallbackQuery != nil {
-				handleCallbackQuery(update.CallbackQuery)
-			}
+		if update.Message != nil && slices.Contains(allowedUsers, strconv.FormatInt(update.Message.From.ID, 10)) {
+			handleMessage(update.Message)
+		} else if update.CallbackQuery != nil && slices.Contains(allowedUsers, strconv.FormatInt(update.CallbackQuery.From.ID, 10)) {
+			handleCallbackQuery(update.CallbackQuery)
 		} else {
 			userID := update.Message.From.ID
 			msg := tgbotapi.NewMessage(userID, fmt.Sprintf("Sorry %s, you can't use this bot", update.Message.From.UserName))
@@ -118,7 +116,7 @@ func handleMessage(message *tgbotapi.Message) {
 		userSessions[userID] = &UserSession{
 			Model:        "mistral-31-24b", // Default model
 			Messages:     []Message{},
-			SystemPrompt: "You are my bro, be witty and concise.",
+			SystemPrompt: "You are my bruv, be witty and concise.",
 		}
 	}
 
@@ -146,13 +144,6 @@ func handleCallbackQuery(callback *tgbotapi.CallbackQuery) {
 
 	model := callback.Data
 
-	// Initialize session if it doesn't exist
-	if userSessions[userID] == nil {
-		userSessions[userID] = &UserSession{
-			Messages: []Message{},
-		}
-	}
-
 	userSessions[userID].Model = model
 
 	// Answer callback query
@@ -169,7 +160,7 @@ func handleCallbackQuery(callback *tgbotapi.CallbackQuery) {
 
 func handleSetSystemPrompt(userID int64, text string) {
 	// Extract the system prompt from the command
-	prompt := strings.TrimPrefix(text, "/system_prompt ")
+	prompt := strings.TrimPrefix(text, "/system_prompt")
 
 	if prompt == "" {
 		msg := tgbotapi.NewMessage(userID, "Use like /system_prompt <your prompt> to set a system prompt.")
