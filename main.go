@@ -93,7 +93,6 @@ func main() {
 
 	// Handle updates
 	for update := range updates {
-		// Only allow allowed users
 		if update.Message != nil && slices.Contains(allowedUsers, strconv.FormatInt(update.Message.From.ID, 10)) {
 			handleMessage(update.Message)
 		} else if update.CallbackQuery != nil && slices.Contains(allowedUsers, strconv.FormatInt(update.CallbackQuery.From.ID, 10)) {
@@ -118,6 +117,7 @@ func handleMessage(message *tgbotapi.Message) {
 			Messages:     []Message{},
 			SystemPrompt: "You are my bruv, be witty and concise.",
 		}
+		setSystemPrompt(userID, userSessions[userID].SystemPrompt)
 	}
 
 	session := userSessions[userID]
