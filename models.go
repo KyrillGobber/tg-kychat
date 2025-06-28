@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"sort"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
@@ -25,6 +26,9 @@ func handleModelSelection(userID int64) {
 	if err != nil {
 		msg = tgbotapi.NewMessage(userID, fmt.Sprintf("Error fetching models: %v", err))
 	} else {
+		sort.Slice(models, func(i, j int) bool {
+			return models[i].ID < models[j].ID
+		})
 		keyboard := tgbotapi.NewInlineKeyboardMarkup()
 		for _, model := range models {
 			keyboard.InlineKeyboard = append(keyboard.InlineKeyboard,

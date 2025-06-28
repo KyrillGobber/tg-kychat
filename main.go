@@ -113,7 +113,7 @@ func handleMessage(message *tgbotapi.Message) {
 	// Initialize user session if it doesn't exist
 	if userSessions[userID] == nil {
 		userSessions[userID] = &UserSession{
-			Model:        "mistral-31-24b", // Default model
+			Model:        "venice/mistral-31-24b", // Default model
 			Messages:     []Message{},
 			SystemPrompt: "You are my bruv, be witty and concise.",
 		}
