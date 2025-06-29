@@ -9,12 +9,12 @@ import (
 func handleHelp(userID int64) {
 	helpText := "🤖 LiteLLM Bot Help\n\n" +
 		"Commands:\n" +
-		"/start - Start the bot\n" +
 		"/model - Change AI model\n" +
+		"/system_prompt - Change system prompt\n" +
 		"/clear - Clear conversation history\n" +
 		"/status - Show current settings\n" +
 		"/help - Show this help\n\n" +
-		"Just send any message to chat with the AI!"
+		"Just send any message to chat with the default model."
 
 	msg := tgbotapi.NewMessage(userID, helpText)
 	bot.Send(msg)

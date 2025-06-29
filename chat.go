@@ -7,6 +7,27 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
+type LiteLLMResponseFull struct {
+	ID      string `json:"id"`
+	Object  string `json:"object"`
+	Created int    `json:"created"`
+	Model   string `json:"model"`
+	Choices []struct {
+		Index   int `json:"index"`
+		Message struct {
+			Role    string `json:"role"`
+			Content string `json:"content"`
+		} `json:"message"`
+		FinishReason string `json:"finish_reason"`
+	} `json:"choices"`
+	Usage struct {
+		PromptTokens     int `json:"prompt_tokens"`
+		CompletionTokens int `json:"completion_tokens"`
+		TotalTokens      int `json:"total_tokens"`
+	} `json:"usage"`
+	Citations []string `json:"citations,omitempty"` // Optional field for citations
+}
+
 func handleClear(userID int64) {
 	if userSessions[userID] != nil {
 		userSessions[userID].Messages = []Message{}
@@ -57,4 +78,21 @@ func handleChat(userID int64, text string, session *UserSession) {
 	finalMsg := tgbotapi.NewEditMessageText(userID, sentMsg.MessageID, msgText)
 	finalMsg.ParseMode = tgbotapi.ModeMarkdown
 	bot.Send(finalMsg)
+	if len(response.Citations) > 0 {
+		citationMsg := tgbotapi.NewMessage(userID, "Citations:\n"+formatCitations(response.Citations))
+		citationMsg.ParseMode = tgbotapi.ModeMarkdown
+		bot.Send(citationMsg)
+	}
+}
+
+func formatCitations(citations []string) string {
+	if len(citations) == 0 {
+		return "No citations available."
+	}
+
+	formatted := ""
+	for i, citation := range citations {
+		formatted += fmt.Sprintf("%d. %s\n", i+1, citation)
+	}
+	return formatted
 }
